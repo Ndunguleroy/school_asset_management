@@ -1,7 +1,9 @@
+cat > pyproject.toml << 'EOF'
 [tool.vercel]
 entrypoint = "run:app"
 
 [project]
 name = "school_asset_management"
 version = "0.1.0"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
+EOF
