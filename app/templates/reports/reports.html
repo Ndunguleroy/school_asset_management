@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Reports</h4>
+        <p class="text-muted mb-0">Generate and view system reports</p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-box-seam fs-1 text-primary mb-3"></i>
+                    <h5 class="fw-bold">Inventory Report</h5>
+                    <p class="text-muted">View all assets by department, category, condition and status.</p>
+                    <a href="{{ url_for('reports.inventory') }}" class="btn btn-primary mt-2">
+                        <i class="bi bi-eye"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-tools fs-1 text-danger mb-3"></i>
+                    <h5 class="fw-bold">Maintenance Report</h5>
+                    <p class="text-muted">View all maintenance activities including active and completed records.</p>
+                    <a href="{{ url_for('reports.maintenance') }}" class="btn btn-danger mt-2">
+                        <i class="bi bi-eye"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-arrow-left-right fs-1 text-warning mb-3"></i>
+                    <h5 class="fw-bold">Allocations Report</h5>
+                    <p class="text-muted">View all asset allocations including active assignments and returns.</p>
+                    <a href="{{ url_for('reports.allocations') }}" class="btn btn-warning mt-2">
+                        <i class="bi bi-eye"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-cash-stack fs-1 text-success mb-3"></i>
+                    <h5 class="fw-bold">Maintenance Cost Report</h5>
+                    <p class="text-muted">View total maintenance costs per asset and category to support budgeting decisions.</p>
+                    <a href="{{ url_for('reports.maintenance_cost') }}" class="btn btn-success mt-2">
+                        <i class="bi bi-eye"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-body text-center p-5">
+                    <i class="bi bi-clipboard-pulse fs-1 text-info mb-3"></i>
+                    <h5 class="fw-bold">Asset Condition Report</h5>
+                    <p class="text-muted">View the overall health of all assets and identify those needing replacement.</p>
+                    <a href="{{ url_for('reports.asset_condition') }}" class="btn btn-info mt-2">
+                        <i class="bi bi-eye"></i> View Report
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Request an Asset</h4>
+        <p class="text-muted mb-0">Submit a request to borrow an available asset</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('staff.request_asset') }}">
+
+                <div class="alert alert-info border-0">
+                    <i class="bi bi-info-circle"></i>
+                    Your request will be reviewed by your department head or administrator.
+                    You will be notified once it is approved or rejected.
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Asset</label>
+                        <select name="asset_id" class="form-select" required>
+                            <option value="">Select an available asset</option>
+                            {% for asset in assets %}
+                            <option value="{{ asset.id }}">
+                                {{ asset.name }} — {{ asset.category.name }}
+                                ({{ asset.serial_number or 'No serial' }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if not assets %}
+                        <small class="text-danger">No assets available at the moment.</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Borrow Start Date</label>
+                        <input type="date" name="borrow_start_date" class="form-control"
+                            min="{{ today }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Expected Return Date</label>
+                        <input type="date" name="expected_return_date" class="form-control"
+                            min="{{ today }}">
+                        <small class="text-muted">Or specify number of days below</small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Number of Days Required</label>
+                        <input type="number" name="borrow_days" class="form-control"
+                            placeholder="e.g. 7" min="1">
+                        <small class="text-muted">
+                            If you specify days the return date will be calculated automatically
+                        </small>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Reason for Request</label>
+                        <textarea name="reason" class="form-control" rows="3"
+                            placeholder="Explain why you need this asset"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Submit Request
+                    </button>
+                    <a href="{{ url_for('staff.dashboard') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

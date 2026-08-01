@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Edit User</h4>
+        <p class="text-muted mb-0">Update user details and access level</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('admin.edit_user', id=user.id) }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="full_name" class="form-control"
+                            value="{{ user.full_name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" name="email" class="form-control"
+                            value="{{ user.email }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Role</label>
+                        <select name="role" class="form-select" required>
+                            <option value="admin"
+                                {% if user.role == 'admin' %}selected{% endif %}>
+                                Admin
+                            </option>
+                            <option value="asset_officer"
+                                {% if user.role == 'asset_officer' %}selected{% endif %}>
+                                Asset Officer
+                            </option>
+                            <option value="department_head"
+                                {% if user.role == 'department_head' %}selected{% endif %}>
+                                Department Head
+                            </option>
+                            <option value="staff"
+                                {% if user.role == 'staff' %}selected{% endif %}>
+                                Staff
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Department</label>
+                        <select name="department_id" class="form-select">
+                            <option value="">Select department</option>
+                            {% for department in departments %}
+                            <option value="{{ department.id }}"
+                                {% if user.department_id == department.id %}selected{% endif %}>
+                                {{ department.name }} - {{ department.school }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Update User
+                    </button>
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

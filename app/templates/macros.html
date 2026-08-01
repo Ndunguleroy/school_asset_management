@@ -1,0 +1,47 @@
+{% macro asset_link(asset) %}
+<a href="{{ url_for('asset_details.view', id=asset.id) }}"
+    class="fw-semibold text-decoration-none text-dark">
+    {{ asset.name }}
+    <i class="bi bi-box-arrow-up-right small text-muted"></i>
+</a>
+{% endmacro %}
+
+{% macro condition_badge(condition) %}
+{% if condition == 'new' %}
+    <span class="badge bg-success">New</span>
+{% elif condition == 'good' %}
+    <span class="badge bg-primary">Good</span>
+{% elif condition == 'fair' %}
+    <span class="badge bg-warning text-dark">Fair</span>
+{% elif condition == 'poor' %}
+    <span class="badge bg-danger">Poor</span>
+{% elif condition == 'damaged' %}
+    <span class="badge bg-danger">Damaged</span>
+{% elif condition == 'lost' %}
+    <span class="badge bg-dark">Lost</span>
+{% else %}
+    <span class="badge bg-secondary">Disposed</span>
+{% endif %}
+{% endmacro %}
+
+{% macro status_badge(status) %}
+{% if status == 'available' %}
+    <span class="badge bg-success">Available</span>
+{% elif status == 'allocated' %}
+    <span class="badge bg-warning text-dark">Allocated</span>
+{% elif status == 'under_maintenance' %}
+    <span class="badge bg-danger">Under Maintenance</span>
+{% elif status == 'damaged' %}
+    <span class="badge bg-danger">Damaged</span>
+{% elif status == 'lost' %}
+    <span class="badge bg-dark">Lost</span>
+{% else %}
+    <span class="badge bg-secondary">Disposed</span>
+{% endif %}
+{% endmacro %}
+
+{% macro can_manage_assets() %}
+{% if current_user.role in ['admin', 'asset_officer'] %}
+    true
+{% endif %}
+{% endmacro %}

@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">{{ asset.name }}</h4>
+            <p class="text-muted mb-0">Asset Details</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="history.back()" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </button>
+            {% if current_user.role == 'staff' and can_request %}
+            <a href="{{ url_for('staff.request_asset') }}" class="btn btn-primary">
+                <i class="bi bi-send"></i> Request This Asset
+            </a>
+            {% endif %}
+            {% if current_user.role == 'admin' %}
+            <a href="{{ url_for('assets.edit', id=asset.id) }}" class="btn btn-primary">
+                <i class="bi bi-pencil"></i> Edit Asset
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Asset Information -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-primary">
+                        <i class="bi bi-box-seam"></i> Asset Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-muted" style="width: 40%">Asset Name</td>
+                            <td class="fw-semibold">{{ asset.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Asset ID</td>
+                            <td>#{{ asset.id }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Serial Number</td>
+                            <td>{{ asset.serial_number or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Category</td>
+                            <td>{{ asset.category.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Department</td>
+                            <td>{{ asset.department.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">School</td>
+                            <td>{{ asset.department.school }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Condition</td>
+                            <td>
+                                {% if asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Poor</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Status</td>
+                            <td>
+                                {% if asset.status == 'available' %}
+                                    <span class="badge bg-success">Available</span>
+                                {% elif asset.status == 'allocated' %}
+                                    <span class="badge bg-warning text-dark">Allocated</span>
+                                {% elif asset.status == 'under_maintenance' %}
+                                    <span class="badge bg-danger">Under Maintenance</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Date Acquired</td>
+                            <td>{{ asset.date_acquired or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Date Registered</td>
+                            <td>{{ asset.created_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        {% if asset.description %}
+                        <tr>
+                            <td class="text-muted">Description</td>
+                            <td>{{ asset.description }}</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Allocation and Technician -->
+        <div class="col-md-6">
+
+            <!-- Current Allocation -->
+            <div class="card shadow-sm border-0 rounded-3 mb-4">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-warning">
+                        <i class="bi bi-arrow-left-right"></i> Current Allocation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if current_allocation %}
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-muted" style="width: 40%">Allocated To</td>
+                            <td class="fw-semibold">{{ current_allocation.user.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Role</td>
+                            <td>{{ current_allocation.user.role.replace('_', ' ').title() }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Department</td>
+                            <td>{{ current_allocation.department.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Allocated On</td>
+                            <td>{{ current_allocation.allocated_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Borrow Start</td>
+                            <td>{{ current_allocation.borrow_start_date or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Expected Return</td>
+                            <td>{{ current_allocation.expected_return_date or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Status</td>
+                            <td>
+                                {% if current_allocation.status == 'overdue' %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Active</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-check-circle fs-3 text-success"></i>
+                        <p class="text-muted mt-2 mb-0">This asset is not currently allocated.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Technician Info -->
+            {% if current_user.role in ['admin', 'department_head'] %}
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-info">
+                        <i class="bi bi-person-gear"></i> Assigned Technician
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if asset.category.technician_name %}
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-muted" style="width: 40%">Name</td>
+                            <td class="fw-semibold">{{ asset.category.technician_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Email</td>
+                            <td>{{ asset.category.technician_email or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Phone</td>
+                            <td>{{ asset.category.technician_phone or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Category</td>
+                            <td>{{ asset.category.name }}</td>
+                        </tr>
+                    </table>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-person-x fs-3 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">No technician assigned to this category.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Allocation History -->
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-secondary">
+                        <i class="bi bi-clock-history"></i> Allocation History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if allocation_history %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    {% if current_user.role != 'staff' %}
+                                    <th>Allocated To</th>
+                                    {% endif %}
+                                    <th>Department</th>
+                                    <th>Borrow Date</th>
+                                    <th>Expected Return</th>
+                                    <th>Actual Return</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in allocation_history %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    {% if current_user.role != 'staff' %}
+                                    <td class="fw-semibold">{{ record.user.full_name }}</td>
+                                    {% endif %}
+                                    <td>{{ record.department.name }}</td>
+                                    <td>
+                                        {% if record.borrow_start_date %}
+                                            {{ record.borrow_start_date }}
+                                        {% else %}
+                                            {{ record.allocated_at.strftime('%d %b %Y') }}
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.expected_return_date or 'N/A' }}</td>
+                                    <td>
+                                        {% if record.returned_at %}
+                                            {{ record.returned_at.strftime('%d %b %Y') }}
+                                        {% else %}
+                                            <span class="text-muted">Not returned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.status == 'active' %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% elif record.status == 'returned' %}
+                                            <span class="badge bg-secondary">Returned</span>
+                                        {% elif record.status == 'overdue' %}
+                                            <span class="badge bg-danger">Overdue</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark">
+                                                {{ record.status }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-clock-history fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No allocation history for this asset.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance History — admin and department head only -->
+        {% if current_user.role in ['admin', 'department_head'] and maintenance_history %}
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-danger">
+                        <i class="bi bi-tools"></i> Maintenance History
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Type</th>
+                                    <th>Performed By</th>
+                                    <th>Date</th>
+                                    <th>Next Maintenance</th>
+                                    <th>Cost (Ksh)</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in maintenance_history %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ record.maintenance_type or 'N/A' }}</td>
+                                    <td>{{ record.performed_by or 'N/A' }}</td>
+                                    <td>{{ record.date_performed }}</td>
+                                    <td>{{ record.next_maintenance_date or 'Not set' }}</td>
+                                    <td>{{ record.cost or 'N/A' }}</td>
+                                    <td>{{ record.notes or 'N/A' }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

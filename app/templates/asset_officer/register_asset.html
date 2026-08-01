@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Register New Asset</h4>
+        <p class="text-muted mb-0">Add a newly purchased or approved asset to the system</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('asset_officer.register_asset') }}">
+
+                <h6 class="fw-bold text-primary mb-3">Asset Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Asset Name</label>
+                        <input type="text" name="name" class="form-control"
+                            placeholder="e.g. Dell Laptop" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Asset Tag / Barcode / QR Code</label>
+                        <input type="text" name="asset_tag" class="form-control"
+                            placeholder="e.g. TAG-001 or scan barcode">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Serial Number</label>
+                        <input type="text" name="serial_number" class="form-control"
+                            placeholder="e.g. SN123456">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Category</label>
+                        <select name="category_id" class="form-select" required>
+                            <option value="">Select category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Department</label>
+                        <select name="department_id" class="form-select" required>
+                            <option value="">Select department</option>
+                            {% for department in departments %}
+                            <option value="{{ department.id }}">
+                                {{ department.name }} — {{ department.school }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Condition</label>
+                        <select name="condition" class="form-select" required>
+                            <option value="">Select condition</option>
+                            <option value="new">New</option>
+                            <option value="good">Good</option>
+                            <option value="fair">Fair</option>
+                            <option value="poor">Poor</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control"
+                            placeholder="e.g. Block A Room 101">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date Acquired</label>
+                        <input type="date" name="date_acquired" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Warranty Expiry Date</label>
+                        <input type="date" name="warranty_expiry" class="form-control">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3"
+                            placeholder="Optional description or notes"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Register Asset
+                    </button>
+                    <a href="{{ url_for('asset_officer.all_assets') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

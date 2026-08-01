@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Edit Maintenance Record</h4>
+        <p class="text-muted mb-0">Update active maintenance details</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('maintenance.edit', id=record.id) }}">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Asset</label>
+                        <select name="asset_id" class="form-select" required>
+                            {% for asset in assets %}
+                            <option value="{{ asset.id }}" {% if asset.id == record.asset_id %}selected{% endif %}>
+                                {{ asset.name }} - {{ asset.serial_number or 'No serial' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Maintenance Type</label>
+                        <select name="maintenance_type" class="form-select" required>
+                            {% for mtype in ['Repair', 'Servicing', 'Inspection', 'Replacement', 'Cleaning', 'Upgrade'] %}
+                            <option value="{{ mtype }}" {% if record.maintenance_type == mtype %}selected{% endif %}>
+                                {{ mtype }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Performed By</label>
+                        <select name="performed_by" class="form-select" required>
+                            {% for category in categories %}
+                                {% if category.technician_name %}
+                                <option value="{{ category.technician_name }}"
+                                    {% if record.performed_by == category.technician_name %}selected{% endif %}>
+                                    {{ category.technician_name }} — {{ category.name }}
+                                </option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Cost (Ksh)</label>
+                        <input type="number" name="cost" class="form-control" value="{{ record.cost or '' }}" step="0.01">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Date Performed</label>
+                        <input type="date" name="date_performed" class="form-control" value="{{ record.date_performed }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Next Maintenance Date</label>
+                        <input type="date" name="next_maintenance_date" class="form-control" value="{{ record.next_maintenance_date or '' }}">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Notes</label>
+                        <textarea name="notes" class="form-control" rows="3">{{ record.notes or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Update Record
+                    </button>
+                    <a href="{{ url_for('maintenance.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

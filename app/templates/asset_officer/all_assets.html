@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import asset_link %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">All Assets</h4>
+            <p class="text-muted mb-0">View and manage all assets across every department</p>
+        </div>
+        <a href="{{ url_for('asset_officer.register_asset') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Register Asset
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ url_for('asset_officer.all_assets') }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Filter by Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">All Statuses</option>
+                            <option value="available" {% if status_filter == 'available' %}selected{% endif %}>Available</option>
+                            <option value="allocated" {% if status_filter == 'allocated' %}selected{% endif %}>Allocated</option>
+                            <option value="under_maintenance" {% if status_filter == 'under_maintenance' %}selected{% endif %}>Under Maintenance</option>
+                            <option value="damaged" {% if status_filter == 'damaged' %}selected{% endif %}>Damaged</option>
+                            <option value="lost" {% if status_filter == 'lost' %}selected{% endif %}>Lost</option>
+                            <option value="disposed" {% if status_filter == 'disposed' %}selected{% endif %}>Disposed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Filter by Department</label>
+                        <select name="department" class="form-select">
+                            <option value="">All Departments</option>
+                            {% for dept in departments %}
+                            <option value="{{ dept.id }}" {% if department_filter == dept.id|string %}selected{% endif %}>
+                                {{ dept.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Filter by Category</label>
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if category_filter == cat.id|string %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel"></i> Apply Filters
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body">
+            {% if assets %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset Name</th>
+                            <th>Asset Tag</th>
+                            <th>Serial Number</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Location</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Last Verified</th>
+                            <th>Warranty</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in assets %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ asset_link(asset) }}</td>
+                            <td>{{ asset.asset_tag or 'N/A' }}</td>
+                            <td>{{ asset.serial_number or 'N/A' }}</td>
+                            <td>{{ asset.category.name }}</td>
+                            <td>{{ asset.department.name }}</td>
+                            <td>{{ asset.location or 'N/A' }}</td>
+                            <td>
+                                {% if asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% elif asset.condition == 'poor' %}
+                                    <span class="badge bg-danger">Poor</span>
+                                {% elif asset.condition == 'damaged' %}
+                                    <span class="badge bg-danger">Damaged</span>
+                                {% elif asset.condition == 'lost' %}
+                                    <span class="badge bg-dark">Lost</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.status == 'available' %}
+                                    <span class="badge bg-success">Available</span>
+                                {% elif asset.status == 'allocated' %}
+                                    <span class="badge bg-warning text-dark">Allocated</span>
+                                {% elif asset.status == 'under_maintenance' %}
+                                    <span class="badge bg-info">Maintenance</span>
+                                {% elif asset.status == 'damaged' %}
+                                    <span class="badge bg-danger">Damaged</span>
+                                {% elif asset.status == 'lost' %}
+                                    <span class="badge bg-dark">Lost</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.last_verified_at %}
+                                    {{ asset.last_verified_at.strftime('%d %b %Y') }}
+                                {% else %}
+                                    <span class="text-danger small">Never</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.warranty_expiry %}
+                                    {{ asset.warranty_expiry }}
+                                {% else %}
+                                    <span class="text-muted">N/A</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('asset_officer.update_asset', id=asset.id) }}"
+                                    class="btn btn-sm btn-outline-primary" title="Update">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ url_for('asset_officer.move_asset', id=asset.id) }}"
+                                    class="btn btn-sm btn-outline-secondary" title="Move">
+                                    <i class="bi bi-arrow-left-right"></i>
+                                </a>
+                                <form action="{{ url_for('asset_officer.verify_asset', id=asset.id) }}"
+                                    method="POST" class="d-inline">
+                                    <input type="hidden" name="condition" value="{{ asset.condition }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Verify">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No assets found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

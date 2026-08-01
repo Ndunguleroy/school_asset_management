@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Update Asset</h4>
+        <p class="text-muted mb-0">Update asset details, condition, location and warranty</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('asset_officer.update_asset', id=asset.id) }}">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Asset Name</label>
+                        <input type="text" name="name" class="form-control"
+                            value="{{ asset.name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Asset Tag / Barcode / QR Code</label>
+                        <input type="text" name="asset_tag" class="form-control"
+                            value="{{ asset.asset_tag or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Serial Number</label>
+                        <input type="text" name="serial_number" class="form-control"
+                            value="{{ asset.serial_number or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Category</label>
+                        <select name="category_id" class="form-select" required>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}"
+                                {% if category.id == asset.category_id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Department</label>
+                        <select name="department_id" class="form-select" required>
+                            {% for department in departments %}
+                            <option value="{{ department.id }}"
+                                {% if department.id == asset.department_id %}selected{% endif %}>
+                                {{ department.name }} — {{ department.school }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Condition</label>
+                        <select name="condition" class="form-select" required>
+                            <option value="new" {% if asset.condition == 'new' %}selected{% endif %}>New</option>
+                            <option value="good" {% if asset.condition == 'good' %}selected{% endif %}>Good</option>
+                            <option value="fair" {% if asset.condition == 'fair' %}selected{% endif %}>Fair</option>
+                            <option value="poor" {% if asset.condition == 'poor' %}selected{% endif %}>Poor</option>
+                            <option value="damaged" {% if asset.condition == 'damaged' %}selected{% endif %}>Damaged</option>
+                            <option value="lost" {% if asset.condition == 'lost' %}selected{% endif %}>Lost</option>
+                            <option value="disposed" {% if asset.condition == 'disposed' %}selected{% endif %}>Disposed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select" required>
+                            <option value="available" {% if asset.status == 'available' %}selected{% endif %}>Available</option>
+                            <option value="allocated" {% if asset.status == 'allocated' %}selected{% endif %}>Allocated</option>
+                            <option value="under_maintenance" {% if asset.status == 'under_maintenance' %}selected{% endif %}>Under Maintenance</option>
+                            <option value="damaged" {% if asset.status == 'damaged' %}selected{% endif %}>Damaged</option>
+                            <option value="lost" {% if asset.status == 'lost' %}selected{% endif %}>Lost</option>
+                            <option value="disposed" {% if asset.status == 'disposed' %}selected{% endif %}>Disposed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control"
+                            value="{{ asset.location or '' }}"
+                            placeholder="e.g. Block A Room 101">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Date Acquired</label>
+                        <input type="date" name="date_acquired" class="form-control"
+                            value="{{ asset.date_acquired or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Warranty Expiry Date</label>
+                        <input type="date" name="warranty_expiry" class="form-control"
+                            value="{{ asset.warranty_expiry or '' }}">
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3">{{ asset.description or '' }}</textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Update Asset
+                    </button>
+                    <a href="{{ url_for('asset_officer.all_assets') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

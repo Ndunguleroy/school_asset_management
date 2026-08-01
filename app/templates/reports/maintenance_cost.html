@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Maintenance Cost Report</h4>
+            <p class="text-muted mb-0">Total maintenance expenditure per asset and category</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="bi bi-printer"></i> Print Report
+            </button>
+            <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-success">Ksh {{ "{:,.2f}".format(overall_total) }}</h4>
+                <p class="text-muted mb-0 small">Total Maintenance Expenditure</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-primary">{{ total_records }}</h4>
+                <p class="text-muted mb-0 small">Total Maintenance Records</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-warning">{{ asset_costs|length }}</h4>
+                <p class="text-muted mb-0 small">Assets with Maintenance History</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cost Per Category -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-success">
+                <i class="bi bi-tags"></i> Cost by Category
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if category_costs %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Category</th>
+                            <th>Maintenance Records</th>
+                            <th>Total Cost (Ksh)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in category_costs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-semibold">{{ row.category }}</td>
+                            <td>{{ row.total_records }}</td>
+                            <td class="fw-bold text-success">
+                                Ksh {{ "{:,.2f}".format(row.total_cost) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-cash fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No maintenance cost data available yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Cost Per Asset -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-primary">
+                <i class="bi bi-box-seam"></i> Cost by Asset
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if asset_costs %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset Name</th>
+                            <th>Serial Number</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Maintenance Records</th>
+                            <th>Total Cost (Ksh)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in asset_costs %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-semibold">{{ row.name }}</td>
+                            <td>{{ row.serial_number or 'N/A' }}</td>
+                            <td>{{ row.category }}</td>
+                            <td>{{ row.department }}</td>
+                            <td>{{ row.total_records }}</td>
+                            <td class="fw-bold {% if row.total_cost > 10000 %}text-danger{% else %}text-success{% endif %}">
+                                Ksh {{ "{:,.2f}".format(row.total_cost) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-cash fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No maintenance cost data available yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

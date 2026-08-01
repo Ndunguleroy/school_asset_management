@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import asset_link %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Asset Officer Dashboard</h4>
+            <p class="text-muted mb-0">Welcome, {{ current_user.full_name }}</p>
+        </div>
+        <a href="{{ url_for('asset_officer.register_asset') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Register Asset
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-primary">{{ total_assets }}</h4>
+                <p class="text-muted mb-0 small">Total Assets</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-success">{{ available }}</h4>
+                <p class="text-muted mb-0 small">Available</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-warning">{{ allocated }}</h4>
+                <p class="text-muted mb-0 small">Allocated</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-info">{{ under_maintenance }}</h4>
+                <p class="text-muted mb-0 small">Maintenance</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-danger">{{ damaged }}</h4>
+                <p class="text-muted mb-0 small">Damaged</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-secondary">{{ disposed }}</h4>
+                <p class="text-muted mb-0 small">Disposed</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Pending Allocations to Process -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-success">
+                        <i class="bi bi-check2-circle"></i> Approved Requests to Process
+                        <span class="badge bg-success ms-2">{{ pending_allocations|length }}</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if pending_allocations %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Requested By</th>
+                                    <th>Department</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for req in pending_allocations %}
+                                <tr>
+                                    <td>{{ asset_link(req.asset) }}</td>
+                                    <td>{{ req.requester.full_name }}</td>
+                                    <td>{{ req.department.name }}</td>
+                                    <td>
+                                        <a href="{{ url_for('asset_officer.allocations') }}"
+                                            class="btn btn-sm btn-outline-success">
+                                            Process
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-check-circle text-success fs-3"></i>
+                        <p class="text-muted mt-2 mb-0">No pending allocations to process.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Assets Needing Verification -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-warning">
+                        <i class="bi bi-clipboard-check"></i> Verification Status
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between p-3 bg-warning bg-opacity-10 rounded-3 mb-3">
+                        <div>
+                            <h4 class="fw-bold text-warning mb-0">{{ unverified }}</h4>
+                            <p class="text-muted mb-0 small">Assets not verified in 30 days</p>
+                        </div>
+                        <a href="{{ url_for('asset_officer.stocktake') }}" class="btn btn-warning">
+                            <i class="bi bi-clipboard-check"></i> Run Stock Take
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expiring Warranties -->
+        {% if expiring_warranty %}
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-info">
+                        <i class="bi bi-shield-exclamation"></i> Expiring Warranties
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>Department</th>
+                                    <th>Warranty Expiry</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in expiring_warranty %}
+                                <tr>
+                                    <td>{{ asset_link(asset) }}</td>
+                                    <td>{{ asset.department.name }}</td>
+                                    <td>
+                                        {% set days_left = (asset.warranty_expiry - today).days %}
+                                        <span class="{% if days_left < 30 %}text-danger{% else %}text-warning{% endif %}">
+                                            {{ asset.warranty_expiry }}
+                                            ({{ days_left }} days left)
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recent Movements -->
+        {% if recent_movements %}
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-secondary">
+                        <i class="bi bi-arrow-left-right"></i> Recent Asset Movements
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Asset</th>
+                                    <th>From</th>
+                                    <th>To</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in recent_movements %}
+                                <tr>
+                                    <td>{{ asset_link(movement.asset) }}</td>
+                                    <td>{{ movement.from_department.name if movement.from_department else 'N/A' }}</td>
+                                    <td>{{ movement.to_department.name }}</td>
+                                    <td>{{ movement.moved_at.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+
+</div>
+{% endblock %}

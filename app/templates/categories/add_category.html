@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Add Category</h4>
+        <p class="text-muted mb-0">Create a new asset category and assign a technician</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('categories.add') }}">
+
+                <h6 class="fw-bold text-primary mb-3">Category Details</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Computers" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="2" placeholder="Optional description"></textarea>
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="fw-bold text-primary mb-3">Assigned Technician</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Technician Name</label>
+                        <input type="text" name="technician_name" class="form-control" placeholder="e.g. John Kamau">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Technician Email</label>
+                        <input type="email" name="technician_email" class="form-control" placeholder="e.g. john@school.ac.ke">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Technician Phone</label>
+                        <input type="text" name="technician_phone" class="form-control" placeholder="e.g. 0712345678">
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Category
+                    </button>
+                    <a href="{{ url_for('categories.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

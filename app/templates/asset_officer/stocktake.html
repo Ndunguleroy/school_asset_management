@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import asset_link %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Stock Take</h4>
+            <p class="text-muted mb-0">Periodic asset verification and stock taking</p>
+        </div>
+        <span class="text-muted small">Today: {{ today }}</span>
+    </div>
+
+    <!-- Assets Needing Verification -->
+    {% if unverified %}
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-warning">
+                <i class="bi bi-exclamation-triangle"></i> Assets Needing Verification
+                <span class="badge bg-warning text-dark ms-2">{{ unverified|length }}</span>
+            </h5>
+            <p class="text-muted small">Assets not verified in the last 30 days</p>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Location</th>
+                            <th>Current Condition</th>
+                            <th>Last Verified</th>
+                            <th>Verify</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in unverified %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ asset_link(asset) }}</td>
+                            <td>{{ asset.category.name }}</td>
+                            <td>{{ asset.department.name }}</td>
+                            <td>{{ asset.location or 'N/A' }}</td>
+                            <td>
+                                {% if asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ asset.condition }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.last_verified_at %}
+                                    {{ asset.last_verified_at.strftime('%d %b %Y') }}
+                                {% else %}
+                                    <span class="text-danger">Never verified</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#verifyModal{{ asset.id }}">
+                                    <i class="bi bi-check-circle"></i> Verify
+                                </button>
+
+                                <!-- Verify Modal -->
+                                <div class="modal fade" id="verifyModal{{ asset.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Verify Asset</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('asset_officer.verify_asset', id=asset.id) }}"
+                                                method="POST">
+                                                <div class="modal-body">
+                                                    <p>Verifying: <strong>{{ asset.name }}</strong></p>
+                                                    <p class="text-muted small">
+                                                        Location: {{ asset.location or 'Not set' }}
+                                                    </p>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Current Condition</label>
+                                                        <select name="condition" class="form-select" required>
+                                                            <option value="new" {% if asset.condition == 'new' %}selected{% endif %}>New</option>
+                                                            <option value="good" {% if asset.condition == 'good' %}selected{% endif %}>Good</option>
+                                                            <option value="fair" {% if asset.condition == 'fair' %}selected{% endif %}>Fair</option>
+                                                            <option value="poor" {% if asset.condition == 'poor' %}selected{% endif %}>Poor</option>
+                                                            <option value="damaged" {% if asset.condition == 'damaged' %}selected{% endif %}>Damaged</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                        data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        Confirm Verification
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- All Assets grouped by Department -->
+    {% for dept in departments %}
+    {% set dept_assets = assets|selectattr('department_id', 'equalto', dept.id)|list %}
+    {% if dept_assets %}
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold">
+                <i class="bi bi-building"></i> {{ dept.name }}
+                <span class="text-muted small ms-2">{{ dept.school }}</span>
+                <span class="badge bg-primary ms-2">{{ dept_assets|length }} assets</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Asset Tag</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Last Verified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in dept_assets %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ asset_link(asset) }}</td>
+                            <td>{{ asset.asset_tag or 'N/A' }}</td>
+                            <td>{{ asset.category.name }}</td>
+                            <td>{{ asset.location or 'N/A' }}</td>
+                            <td>
+                                {% if asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ asset.condition }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.status == 'available' %}
+                                    <span class="badge bg-success">Available</span>
+                                {% elif asset.status == 'allocated' %}
+                                    <span class="badge bg-warning text-dark">Allocated</span>
+                                {% elif asset.status == 'under_maintenance' %}
+                                    <span class="badge bg-info">Maintenance</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ asset.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.last_verified_at %}
+                                    {{ asset.last_verified_at.strftime('%d %b %Y') }}
+                                {% else %}
+                                    <span class="text-danger small">Never</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+
+</div>
+{% endblock %}

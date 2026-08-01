@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>School Asset Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold"
+            href="{% if current_user.role == 'staff' %}{{ url_for('staff.dashboard') }}
+                  {% elif current_user.role == 'asset_officer' %}{{ url_for('asset_officer.dashboard') }}
+                  {% else %}{{ url_for('assets.index') }}{% endif %}">
+            <i class="bi bi-building"></i> School AMS
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+
+                {% if current_user.role == 'staff' %}
+                <!-- Staff Navigation -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('staff.dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> My Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('staff.request_asset') }}">
+                        <i class="bi bi-plus-circle"></i> Request Asset
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('staff.history') }}">
+                        <i class="bi bi-clock-history"></i> My History
+                    </a>
+                </li>
+
+                {% elif current_user.role == 'asset_officer' %}
+                <!-- Asset Officer Navigation -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('asset_officer.dashboard') }}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-box-seam"></i> Assets
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('asset_officer.all_assets') }}">
+                            <i class="bi bi-list-ul"></i> All Assets
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('asset_officer.register_asset') }}">
+                            <i class="bi bi-plus-circle"></i> Register Asset
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('asset_officer.stocktake') }}">
+                            <i class="bi bi-clipboard-check"></i> Stock Take
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('asset_officer.movements') }}">
+                            <i class="bi bi-arrow-left-right"></i> Asset Movements
+                        </a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('asset_officer.allocations') }}">
+                        <i class="bi bi-check2-circle"></i> Process Allocations
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('asset_officer.returns') }}">
+                        <i class="bi bi-arrow-return-left"></i> Process Returns
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('asset_officer.reports') }}">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Reports
+                    </a>
+                </li>
+
+                {% else %}
+                <!-- Admin and Department Head Navigation -->
+
+                <!-- Assets Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-box-seam"></i> Assets
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="{{ url_for('assets.index') }}">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('assets.all_assets') }}">
+                            <i class="bi bi-list-ul"></i> All Assets
+                        </a></li>
+                        {% if current_user.role in ['admin', 'department_head'] %}
+                        <li><a class="dropdown-item" href="{{ url_for('assets.add') }}">
+                            <i class="bi bi-plus-circle"></i> Add Asset
+                        </a></li>
+                        {% endif %}
+                    </ul>
+                </li>
+
+                <!-- Categories -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('categories.index') }}">
+                        <i class="bi bi-tags"></i> Categories
+                    </a>
+                </li>
+
+                <!-- Departments -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('departments.index') }}">
+                        <i class="bi bi-building"></i> Departments
+                    </a>
+                </li>
+
+                <!-- Allocations -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('allocations.index') }}">
+                        <i class="bi bi-arrow-left-right"></i> Allocations
+                    </a>
+                </li>
+
+                <!-- Requests -->
+                {% if current_user.role in ['admin', 'department_head'] %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('requests.index') }}">
+                        <i class="bi bi-envelope-paper"></i> Requests
+                        {% if pending_requests_count > 0 %}
+                        <span class="badge bg-danger">{{ pending_requests_count }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Maintenance — admin only -->
+                {% if current_user.role == 'admin' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('maintenance.index') }}">
+                        <i class="bi bi-tools"></i> Maintenance
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Maintenance — department head can view -->
+                {% if current_user.role == 'department_head' %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('maintenance.index') }}">
+                        <i class="bi bi-tools"></i> Maintenance
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Reports -->
+                {% if current_user.role in ['admin', 'department_head'] %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('reports.index') }}">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Reports
+                    </a>
+                </li>
+                {% endif %}
+
+                {% endif %}
+            </ul>
+
+            <!-- User Dropdown -->
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ current_user.full_name }}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <span class="dropdown-item-text text-muted small">
+                                {{ current_user.role.replace('_', ' ').title() }}
+                            </span>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% if current_user.role == 'admin' %}
+                        <li>
+                            <a class="dropdown-item" href="{{ url_for('admin.users') }}">
+                                <i class="bi bi-people"></i> User Management
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li>
+                            <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+{% endif %}
+
+<div class="container-fluid mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

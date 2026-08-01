@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Edit Category</h4>
+        <p class="text-muted mb-0">Update category details and assigned technician</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('categories.edit', id=category.id) }}">
+
+                <h6 class="fw-bold text-primary mb-3">Category Details</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Category Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ category.name }}" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="2">{{ category.description or '' }}</textarea>
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="fw-bold text-primary mb-3">Assigned Technician</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Technician Name</label>
+                        <input type="text" name="technician_name" class="form-control" value="{{ category.technician_name or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Technician Email</label>
+                        <input type="email" name="technician_email" class="form-control" value="{{ category.technician_email or '' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Technician Phone</label>
+                        <input type="text" name="technician_phone" class="form-control" value="{{ category.technician_phone or '' }}">
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Update Category
+                    </button>
+                    <a href="{{ url_for('categories.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

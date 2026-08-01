@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Dashboard</h4>
+            <p class="text-muted mb-0">Welcome back, {{ current_user.full_name }}!</p>
+        </div>
+        <div>
+            <a href="{{ url_for('assets.add') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Asset
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 p-3 me-3">
+                        <i class="bi bi-box-seam fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Total Assets</p>
+                        <h4 class="fw-bold mb-0">{{ total_assets }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-success bg-opacity-10 text-success rounded-3 p-3 me-3">
+                        <i class="bi bi-check-circle fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Available</p>
+                        <h4 class="fw-bold mb-0">{{ available_assets }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-warning bg-opacity-10 text-warning rounded-3 p-3 me-3">
+                        <i class="bi bi-arrow-left-right fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Allocated</p>
+                        <h4 class="fw-bold mb-0">{{ allocated_assets }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-danger bg-opacity-10 text-danger rounded-3 p-3 me-3">
+                        <i class="bi bi-tools fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Under Maintenance</p>
+                        <h4 class="fw-bold mb-0">{{ under_maintenance }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-info bg-opacity-10 text-info rounded-3 p-3 me-3">
+                        <i class="bi bi-tags fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Categories</p>
+                        <h4 class="fw-bold mb-0">{{ total_categories }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-secondary bg-opacity-10 text-secondary rounded-3 p-3 me-3">
+                        <i class="bi bi-building fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Departments</p>
+                        <h4 class="fw-bold mb-0">{{ total_departments }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon-box bg-purple bg-opacity-10 text-purple rounded-3 p-3 me-3">
+                        <i class="bi bi-wrench fs-3"></i>
+                    </div>
+                    <div>
+                        <p class="text-muted mb-0 small">Maintenance Records</p>
+                        <h4 class="fw-bold mb-0">{{ total_maintenance }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Assets Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold">Recently Added Assets</h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_assets %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Asset Name</th>
+                                    <th>Category</th>
+                                    <th>Department</th>
+                                    <th>Condition</th>
+                                    <th>Status</th>
+                                    <th>Date Added</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for asset in recent_assets %}
+                                <tr>
+                                    <td class="fw-semibold">{{ asset.name }}</td>
+                                    <td>{{ asset.category.name }}</td>
+                                    <td>{{ asset.department.name }}</td>
+                                    <td>
+                                        {% if asset.condition == 'new' %}
+                                            <span class="badge bg-success">New</span>
+                                        {% elif asset.condition == 'good' %}
+                                            <span class="badge bg-primary">Good</span>
+                                        {% elif asset.condition == 'fair' %}
+                                            <span class="badge bg-warning text-dark">Fair</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Poor</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if asset.status == 'available' %}
+                                            <span class="badge bg-success">Available</span>
+                                        {% elif asset.status == 'allocated' %}
+                                            <span class="badge bg-warning text-dark">Allocated</span>
+                                        {% elif asset.status == 'under_maintenance' %}
+                                            <span class="badge bg-danger">Under Maintenance</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Disposed</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ asset.created_at.strftime('%d %b %Y') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No assets added yet. Click Add Asset to get started.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

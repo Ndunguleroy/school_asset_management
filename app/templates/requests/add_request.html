@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Request Asset Allocation</h4>
+        <p class="text-muted mb-0">Submit a request to the admin to allocate an asset to your department</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('requests.add') }}">
+
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    You are requesting an asset for <strong>{{ department.name }}</strong>.
+                    The admin will review and approve or reject your request.
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Asset</label>
+                        <select name="asset_id" class="form-select" required>
+                            <option value="">Select available asset</option>
+                            {% for asset in assets %}
+                            <option value="{{ asset.id }}">
+                                {{ asset.name }} — {{ asset.category.name }}
+                                ({{ asset.serial_number or 'No serial' }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% if not assets %}
+                        <small class="text-danger">No available assets at the moment.</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Reason for Request</label>
+                        <textarea name="reason" class="form-control" rows="3"
+                            placeholder="Explain why your department needs this asset" required></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Submit Request
+                    </button>
+                    <a href="{{ url_for('requests.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

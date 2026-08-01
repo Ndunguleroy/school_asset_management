@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Add Maintenance Record</h4>
+        <p class="text-muted mb-0">Log a maintenance activity for an asset</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('maintenance.add') }}">
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Asset</label>
+                        <select name="asset_id" id="asset_id" class="form-select" required>
+                            <option value="">Select asset</option>
+                            {% for asset in assets %}
+                            <option value="{{ asset.id }}">
+                                {{ asset.name }} - {{ asset.serial_number or 'No serial' }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Maintenance Type</label>
+                        <select name="maintenance_type" class="form-select" required>
+                            <option value="">Select type</option>
+                            <option value="Repair">Repair</option>
+                            <option value="Servicing">Servicing</option>
+                            <option value="Inspection">Inspection</option>
+                            <option value="Replacement">Replacement</option>
+                            <option value="Cleaning">Cleaning</option>
+                            <option value="Upgrade">Upgrade</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Assigned Technician</label>
+                        <input type="text" name="performed_by" id="performed_by"
+                            class="form-control bg-light"
+                            placeholder="Select an asset to auto assign technician"
+                            readonly>
+                        <small id="technician_info" class="text-muted"></small>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Cost (Ksh)</label>
+                        <input type="number" name="cost" class="form-control"
+                            placeholder="e.g. 5000" step="0.01">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Date Performed</label>
+                        <input type="date" name="date_performed" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Next Maintenance Date</label>
+                        <input type="date" name="next_maintenance_date" class="form-control">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Notes</label>
+                        <textarea name="notes" class="form-control" rows="3"
+                            placeholder="Optional notes"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Record
+                    </button>
+                    <a href="{{ url_for('maintenance.index') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const assetTechnicianMap = {{ asset_technician_map | tojson }};
+
+    document.getElementById('asset_id').addEventListener('change', function() {
+        const assetId = this.value;
+        const technicianField = document.getElementById('performed_by');
+        const technicianInfo = document.getElementById('technician_info');
+
+        if (assetId && assetTechnicianMap[assetId]) {
+            const data = assetTechnicianMap[assetId];
+            technicianField.value = data.technician;
+            technicianInfo.innerHTML = '<i class="bi bi-check-circle text-success"></i> Auto assigned from category: <strong>' + data.category + '</strong>';
+        } else if (assetId) {
+            technicianField.value = '';
+            technicianInfo.innerHTML = '<i class="bi bi-exclamation-circle text-warning"></i> No technician assigned to this asset category. <a href="{{ url_for("categories.index") }}">Assign one via Categories</a>';
+        } else {
+            technicianField.value = '';
+            technicianInfo.innerHTML = '';
+        }
+    });
+</script>
+
+{% endblock %}

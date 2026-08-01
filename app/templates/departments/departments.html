@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Departments</h4>
+            <p class="text-muted mb-0">
+                {% if current_user.role == 'department_head' %}
+                View departments and their assets
+                {% else %}
+                Manage university departments and schools
+                {% endif %}
+            </p>
+        </div>
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('departments.add') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Department
+        </a>
+        {% endif %}
+    </div>
+
+    {% if current_user.role == 'department_head' and default_department %}
+    <!-- Department Head default view — show own department first -->
+    <div class="alert alert-info border-0 rounded-3 mb-4">
+        <i class="bi bi-info-circle"></i>
+        You are viewing <strong>{{ default_department.name }}</strong> by default.
+        You can browse other departments below but can only manage assets in your own department.
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body">
+            {% if departments %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Department Name</th>
+                            <th>School</th>
+                            <th>Date Added</th>
+                            {% if current_user.role == 'admin' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for department in departments %}
+                        <tr style="cursor: pointer;"
+                            onclick="window.location=this.dataset.url"
+                            data-url="{{ url_for('departments.view_assets', id=department.id) }}">
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <span class="fw-semibold">{{ department.name }}</span>
+                                {% if current_user.role == 'department_head' and department.id == current_user.department_id %}
+                                <span class="badge bg-primary ms-2">Your Department</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-primary bg-opacity-10 text-primary">
+                                    {{ department.school }}
+                                </span>
+                            </td>
+                            <td>{{ department.created_at.strftime('%d %b %Y') }}</td>
+                            {% if current_user.role == 'admin' %}
+                            <td onclick="event.stopPropagation()">
+                                <a href="{{ url_for('departments.edit', id=department.id) }}"
+                                    class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <form action="{{ url_for('departments.delete', id=department.id) }}"
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Are you sure you want to delete this department?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            {% else %}
+                            <td></td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-building fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No departments added yet.</p>
+                {% if current_user.role == 'admin' %}
+                <a href="{{ url_for('departments.add') }}" class="btn btn-primary mt-2">
+                    <i class="bi bi-plus-circle"></i> Add First Department
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Allocation Details</h4>
+            <p class="text-muted mb-0">Full details of this asset allocation</p>
+        </div>
+        <a href="{{ url_for('allocations.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Allocations
+        </a>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- Asset Details -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-primary">
+                        <i class="bi bi-box-seam"></i> Asset Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-muted">Asset Name</td>
+                            <td class="fw-semibold">{{ allocation.asset.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Serial Number</td>
+                            <td>{{ allocation.asset.serial_number or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Category</td>
+                            <td>{{ allocation.asset.category.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Department</td>
+                            <td>{{ allocation.asset.department.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Condition</td>
+                            <td>
+                                {% if allocation.asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif allocation.asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif allocation.asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Poor</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Current Status</td>
+                            <td>
+                                {% if allocation.asset.status == 'available' %}
+                                    <span class="badge bg-success">Available</span>
+                                {% elif allocation.asset.status == 'allocated' %}
+                                    <span class="badge bg-warning text-dark">Allocated</span>
+                                {% elif allocation.asset.status == 'under_maintenance' %}
+                                    <span class="badge bg-danger">Under Maintenance</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Date Acquired</td>
+                            <td>{{ allocation.asset.date_acquired or 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Description</td>
+                            <td>{{ allocation.asset.description or 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Allocation Details -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3 h-100">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold text-warning">
+                        <i class="bi bi-arrow-left-right"></i> Allocation Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="text-muted">Assigned To</td>
+                            <td class="fw-semibold">{{ allocation.user.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">User Role</td>
+                            <td>{{ allocation.user.role }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Department</td>
+                            <td>{{ allocation.department.name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">School</td>
+                            <td>{{ allocation.department.school }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Allocated On</td>
+                            <td>{{ allocation.allocated_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Returned On</td>
+                            <td>
+                                {% if allocation.returned_at %}
+                                    {{ allocation.returned_at.strftime('%d %b %Y') }}
+                                {% else %}
+                                    <span class="text-muted">Not returned yet</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Allocation Status</td>
+                            <td>
+                                {% if allocation.returned_at %}
+                                    <span class="badge bg-success">Returned</span>
+                                {% else %}
+                                    {% set days_out = (today - allocation.allocated_at.date()).days %}
+                                    {% if days_out > 30 %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Active</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted">Notes</td>
+                            <td>{{ allocation.notes or 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Action Buttons -->
+    {% if not allocation.returned_at %}
+    <div class="mt-4">
+        <form action="{{ url_for('allocations.return_asset', id=allocation.id) }}"
+            method="POST" class="d-inline"
+            onsubmit="return confirm('Mark this asset as returned?')">
+            <button type="submit" class="btn btn-success">
+                <i class="bi bi-arrow-return-left"></i> Mark as Returned
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

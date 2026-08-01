@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import asset_link %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Asset Inventory Report</h4>
+            <p class="text-muted mb-0">Full asset inventory across all departments</p>
+        </div>
+        <button onclick="window.print()" class="btn btn-outline-primary">
+            <i class="bi bi-printer"></i> Print Report
+        </button>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-primary">{{ total_assets }}</h4>
+                <p class="text-muted mb-0 small">Total</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-success">{{ available }}</h4>
+                <p class="text-muted mb-0 small">Available</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-warning">{{ allocated }}</h4>
+                <p class="text-muted mb-0 small">Allocated</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-info">{{ under_maintenance }}</h4>
+                <p class="text-muted mb-0 small">Maintenance</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-danger">{{ damaged }}</h4>
+                <p class="text-muted mb-0 small">Damaged</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-secondary">{{ disposed }}</h4>
+                <p class="text-muted mb-0 small">Disposed</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+
+        <!-- By Department -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold">Assets by Department</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Department</th>
+                                    <th>Total Assets</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in assets_by_department %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td><span class="badge bg-primary">{{ item.count }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- By Category -->
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-header bg-white border-0 pt-4 pb-0">
+                    <h5 class="fw-bold">Assets by Category</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total Assets</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in assets_by_category %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td><span class="badge bg-success">{{ item.count }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Full Asset List -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold">Complete Asset Inventory</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset Name</th>
+                            <th>Asset Tag</th>
+                            <th>Serial Number</th>
+                            <th>Category</th>
+                            <th>Department</th>
+                            <th>Location</th>
+                            <th>Condition</th>
+                            <th>Status</th>
+                            <th>Date Acquired</th>
+                            <th>Warranty Expiry</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for asset in all_assets %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ asset_link(asset) }}</td>
+                            <td>{{ asset.asset_tag or 'N/A' }}</td>
+                            <td>{{ asset.serial_number or 'N/A' }}</td>
+                            <td>{{ asset.category.name }}</td>
+                            <td>{{ asset.department.name }}</td>
+                            <td>{{ asset.location or 'N/A' }}</td>
+                            <td>
+                                {% if asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% elif asset.condition == 'poor' %}
+                                    <span class="badge bg-danger">Poor</span>
+                                {% elif asset.condition == 'damaged' %}
+                                    <span class="badge bg-danger">Damaged</span>
+                                {% elif asset.condition == 'lost' %}
+                                    <span class="badge bg-dark">Lost</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if asset.status == 'available' %}
+                                    <span class="badge bg-success">Available</span>
+                                {% elif asset.status == 'allocated' %}
+                                    <span class="badge bg-warning text-dark">Allocated</span>
+                                {% elif asset.status == 'under_maintenance' %}
+                                    <span class="badge bg-info">Maintenance</span>
+                                {% elif asset.status == 'damaged' %}
+                                    <span class="badge bg-danger">Damaged</span>
+                                {% elif asset.status == 'lost' %}
+                                    <span class="badge bg-dark">Lost</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Disposed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ asset.date_acquired or 'N/A' }}</td>
+                            <td>{{ asset.warranty_expiry or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+# Virtual environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Flask instance folder
+instance/
+
+# Environment variables and secrets
+.env
+.env.*
+config.py
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Migration versions (optional — remove this if you want to track migrations)
+# migrations/versions/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# Logs
+*.log
+
+# Uploads
+uploads/
+
+# Compiled assets
+*.pyc

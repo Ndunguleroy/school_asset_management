@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Maintenance Report</h4>
+            <p class="text-muted mb-0">Full maintenance activity history</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="bi bi-printer"></i> Print Report
+            </button>
+            <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-primary">{{ total_records }}</h4>
+                <p class="text-muted mb-0 small">Total Records</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-danger">{{ active }}</h4>
+                <p class="text-muted mb-0 small">Active</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h4 class="fw-bold text-success">{{ completed }}</h4>
+                <p class="text-muted mb-0 small">Completed</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Maintenance Table -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body">
+            {% if maintenance %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Type</th>
+                            <th>Performed By</th>
+                            <th>Date Performed</th>
+                            <th>Next Maintenance</th>
+                            <th>Cost (Ksh)</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in maintenance %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td class="fw-semibold">{{ record.asset.name }}</td>
+                            <td>{{ record.maintenance_type or 'N/A' }}</td>
+                            <td>{{ record.performed_by or 'N/A' }}</td>
+                            <td>{{ record.date_performed }}</td>
+                            <td>{{ record.next_maintenance_date or 'Not set' }}</td>
+                            <td>{{ record.cost or 'N/A' }}</td>
+                            <td>
+                                {% if record.asset.status == 'under_maintenance' %}
+                                    <span class="badge bg-danger">Active</span>
+                                {% else %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ record.notes or 'N/A' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-tools fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No maintenance records found.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Allocation Requests</h4>
+            <p class="text-muted mb-0">
+                {% if current_user.role == 'admin' %}
+                Manage all asset allocation requests
+                {% else %}
+                Staff requests for your department and your own submitted requests
+                {% endif %}
+            </p>
+        </div>
+        {% if current_user.role == 'department_head' %}
+        <a href="{{ url_for('requests.add') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Request Asset
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Pending Requests to Action -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-warning">
+                <i class="bi bi-hourglass-split"></i>
+                {% if current_user.role == 'admin' %}
+                Pending Requests
+                {% else %}
+                Pending Staff Requests from Your Department
+                {% endif %}
+                <span class="badge bg-warning text-dark ms-2">{{ pending|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if pending %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Category</th>
+                            <th>Requested By</th>
+                            <th>Type</th>
+                            <th>Department</th>
+                            <th>Borrow Start</th>
+                            <th>Expected Return</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in pending %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <a href="{{ url_for('asset_details.view', id=req.asset.id) }}"
+                                    class="fw-semibold text-decoration-none">
+                                    {{ req.asset.name }}
+                                </a>
+                            </td>
+                            <td>{{ req.asset.category.name }}</td>
+                            <td>{{ req.requester.full_name }}</td>
+                            <td>
+                                {% if req.request_type == 'staff' %}
+                                    <span class="badge bg-secondary">Staff</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Department Head</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.department.name }}</td>
+                            <td>{{ req.borrow_start_date or 'N/A' }}</td>
+                            <td>{{ req.expected_return_date or 'N/A' }}</td>
+                            <td>{{ req.borrow_days or 'N/A' }}</td>
+                            <td>{{ req.reason or 'N/A' }}</td>
+                            <td>{{ req.created_at.strftime('%d %b %Y') }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-outline-success"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#approveModal{{ req.id }}">
+                                    <i class="bi bi-check-circle"></i> Approve
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#rejectModal{{ req.id }}">
+                                    <i class="bi bi-x-circle"></i> Reject
+                                </button>
+
+                                <!-- Approve Modal -->
+                                <div class="modal fade" id="approveModal{{ req.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Approve Request</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('requests.approve', id=req.id) }}" method="POST">
+                                                <div class="modal-body">
+                                                    <p>
+                                                        Approve allocation of
+                                                        <strong>{{ req.asset.name }}</strong>
+                                                        to <strong>{{ req.requester.full_name }}</strong>?
+                                                    </p>
+                                                    {% if req.borrow_start_date %}
+                                                    <p class="text-muted small">
+                                                        Borrow period: {{ req.borrow_start_date }}
+                                                        to {{ req.expected_return_date or 'Not specified' }}
+                                                        {% if req.borrow_days %}({{ req.borrow_days }} days){% endif %}
+                                                    </p>
+                                                    {% endif %}
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Notes (optional)</label>
+                                                        <textarea name="admin_notes" class="form-control"
+                                                            rows="2" placeholder="Add any notes"></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                        data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-success">
+                                                        Approve
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reject Modal -->
+                                <div class="modal fade" id="rejectModal{{ req.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Reject Request</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form action="{{ url_for('requests.reject', id=req.id) }}" method="POST">
+                                                <div class="modal-body">
+                                                    <p>
+                                                        Reject allocation of
+                                                        <strong>{{ req.asset.name }}</strong>
+                                                        to <strong>{{ req.requester.full_name }}</strong>?
+                                                    </p>
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Reason for rejection</label>
+                                                        <textarea name="admin_notes" class="form-control"
+                                                            rows="2" placeholder="Explain why" required></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-outline-secondary"
+                                                        data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger">
+                                                        Reject
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-check-circle fs-1 text-success"></i>
+                <p class="text-muted mt-2">No pending requests.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Department Head's Own Requests (only shown to department head) -->
+    {% if is_department_head %}
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-primary">
+                <i class="bi bi-send"></i> My Submitted Requests
+                <span class="badge bg-primary ms-2">{{ my_requests|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if my_requests %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Admin Notes</th>
+                            <th>Date Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in my_requests %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <a href="{{ url_for('asset_details.view', id=req.asset.id) }}"
+                                    class="fw-semibold text-decoration-none">
+                                    {{ req.asset.name }}
+                                </a>
+                            </td>
+                            <td>{{ req.reason or 'N/A' }}</td>
+                            <td>
+                                {% if req.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">Pending Admin Approval</span>
+                                {% elif req.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.admin_notes or 'N/A' }}</td>
+                            <td>{{ req.created_at.strftime('%d %b %Y') }}</td>
+                            <td>
+                                {% if req.status == 'pending' %}
+                                <form action="{{ url_for('requests.delete', id=req.id) }}"
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Cancel this request?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-x"></i> Cancel
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-inbox fs-1 text-muted"></i>
+                <p class="text-muted mt-2">You have not submitted any requests yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Resolved Requests -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-secondary">
+                <i class="bi bi-clock-history"></i> Resolved Requests
+                <span class="badge bg-secondary ms-2">{{ resolved|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if resolved %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Requested By</th>
+                            <th>Type</th>
+                            <th>Department</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for req in resolved %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                <a href="{{ url_for('asset_details.view', id=req.asset.id) }}"
+                                    class="fw-semibold text-decoration-none">
+                                    {{ req.asset.name }}
+                                </a>
+                            </td>
+                            <td>{{ req.requester.full_name }}</td>
+                            <td>
+                                {% if req.request_type == 'staff' %}
+                                    <span class="badge bg-secondary">Staff</span>
+                                {% else %}
+                                    <span class="badge bg-primary">Department Head</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.department.name }}</td>
+                            <td>{{ req.reason or 'N/A' }}</td>
+                            <td>
+                                {% if req.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ req.admin_notes or 'N/A' }}</td>
+                            <td>{{ req.updated_at.strftime('%d %b %Y') }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-clock-history fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No resolved requests yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="fw-bold mb-0">Move Asset</h4>
+        <p class="text-muted mb-0">Record asset movement between departments</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><span class="fw-bold">Asset:</span> {{ asset.name }}</p>
+                    <p class="mb-1"><span class="fw-bold">Serial Number:</span> {{ asset.serial_number or 'N/A' }}</p>
+                    <p class="mb-1"><span class="fw-bold">Asset Tag:</span> {{ asset.asset_tag or 'N/A' }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><span class="fw-bold">Current Department:</span> {{ asset.department.name }}</p>
+                    <p class="mb-1"><span class="fw-bold">Current Location:</span> {{ asset.location or 'N/A' }}</p>
+                    <p class="mb-1"><span class="fw-bold">Condition:</span> {{ asset.condition }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-body p-4">
+            <form method="POST" action="{{ url_for('asset_officer.move_asset', id=asset.id) }}">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Move To Department</label>
+                        <select name="to_department_id" class="form-select" required>
+                            <option value="">Select destination department</option>
+                            {% for department in departments %}
+                            {% if department.id != asset.department_id %}
+                            <option value="{{ department.id }}">
+                                {{ department.name }} — {{ department.school }}
+                            </option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label">Reason for Movement</label>
+                        <textarea name="reason" class="form-control" rows="3"
+                            placeholder="Explain why this asset is being moved"></textarea>
+                    </div>
+                </div>
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-arrow-left-right"></i> Confirm Movement
+                    </button>
+                    <a href="{{ url_for('asset_officer.all_assets') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

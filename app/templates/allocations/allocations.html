@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% from 'macros.html' import asset_link %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Allocations</h4>
+            <p class="text-muted mb-0">Track asset assignments across departments</p>
+        </div>
+        {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('allocations.add') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Allocate Asset
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Active Allocations -->
+    <div class="card shadow-sm border-0 rounded-3 mb-4">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-warning">
+                <i class="bi bi-arrow-left-right"></i> Active Allocations
+                <span class="badge bg-warning text-dark ms-2">{{ active|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if active %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Category</th>
+                            <th>Condition</th>
+                            <th>Assigned To</th>
+                            <th>Department</th>
+                            <th>Allocated On</th>
+                            <th>Expected Return</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                            {% if current_user.role == 'admin' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in active %}
+                        {% set days_out = (today - allocation.allocated_at.date()).days %}
+                        <tr class="{% if allocation.status == 'overdue' %}table-danger{% endif %}">
+                            <td>{{ loop.index }}</td>
+                            <td>
+                                {{ asset_link(allocation.asset) }}
+                                {% if allocation.status == 'overdue' %}
+                                <br>
+                                <small class="text-danger">
+                                    <i class="bi bi-exclamation-circle"></i> Overdue
+                                </small>
+                                {% endif %}
+                            </td>
+                            <td>{{ allocation.asset.category.name }}</td>
+                            <td>
+                                {% if allocation.asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif allocation.asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif allocation.asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Poor</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ allocation.user.full_name }}</td>
+                            <td>{{ allocation.department.name }}</td>
+                            <td>
+                                {{ allocation.allocated_at.strftime('%d %b %Y') }}
+                                <br>
+                                <small class="text-muted">{{ days_out }} days ago</small>
+                            </td>
+                            <td>
+                                {% if allocation.expected_return_date %}
+                                    {{ allocation.expected_return_date }}
+                                {% else %}
+                                    <span class="text-muted">Not set</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if allocation.status == 'overdue' %}
+                                    <span class="badge bg-danger">Overdue</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ allocation.notes or 'N/A' }}</td>
+                            {% if current_user.role == 'admin' %}
+                            <td>
+                                <a href="{{ url_for('allocations.view', id=allocation.id) }}"
+                                    class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <form action="{{ url_for('allocations.return_asset', id=allocation.id) }}"
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Mark this asset as returned?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-arrow-return-left"></i> Return
+                                    </button>
+                                </form>
+                                <form action="{{ url_for('allocations.delete', id=allocation.id) }}"
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Delete this allocation?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-check-circle fs-1 text-success"></i>
+                <p class="text-muted mt-2">No active allocations at the moment.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Returned Allocations -->
+    <div class="card shadow-sm border-0 rounded-3">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="fw-bold text-success">
+                <i class="bi bi-clock-history"></i> Returned Allocations
+                <span class="badge bg-success ms-2">{{ returned|length }}</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if returned %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Asset</th>
+                            <th>Category</th>
+                            <th>Condition</th>
+                            <th>Assigned To</th>
+                            <th>Department</th>
+                            <th>Allocated On</th>
+                            <th>Returned On</th>
+                            <th>Notes</th>
+                            {% if current_user.role == 'admin' %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for allocation in returned %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ asset_link(allocation.asset) }}</td>
+                            <td>{{ allocation.asset.category.name }}</td>
+                            <td>
+                                {% if allocation.asset.condition == 'new' %}
+                                    <span class="badge bg-success">New</span>
+                                {% elif allocation.asset.condition == 'good' %}
+                                    <span class="badge bg-primary">Good</span>
+                                {% elif allocation.asset.condition == 'fair' %}
+                                    <span class="badge bg-warning text-dark">Fair</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Poor</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ allocation.user.full_name }}</td>
+                            <td>{{ allocation.department.name }}</td>
+                            <td>{{ allocation.allocated_at.strftime('%d %b %Y') }}</td>
+                            <td>{{ allocation.returned_at.strftime('%d %b %Y') }}</td>
+                            <td>{{ allocation.notes or 'N/A' }}</td>
+                            {% if current_user.role == 'admin' %}
+                            <td>
+                                <a href="{{ url_for('allocations.view', id=allocation.id) }}"
+                                    class="btn btn-sm btn-outline-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <form action="{{ url_for('allocations.delete', id=allocation.id) }}"
+                                    method="POST" class="d-inline"
+                                    onsubmit="return confirm('Delete this allocation?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-clock-history fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No returned allocations yet.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
