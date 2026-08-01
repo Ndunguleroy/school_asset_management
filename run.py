@@ -1,5 +1,5 @@
 from app import create_app, db
-from app import models
+from app.models import User, Department, Category, Asset, Allocation, Maintenance, AllocationRequest, AuditLog, AssetMovement
 
 app = create_app()
 
