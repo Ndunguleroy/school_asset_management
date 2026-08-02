@@ -21,4 +21,5 @@ dependencies = [
     "itsdangerous",
     "jinja2",
     "markupsafe",
+    "resend",
 ]

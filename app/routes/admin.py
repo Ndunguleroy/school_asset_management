@@ -16,36 +16,45 @@ def admin_required(f):
     return decorated_function
 
 def send_signup_email(user):
-    from app import mail
-    from flask_mail import Message
     try:
-        msg = Message(
-            subject='Your School AMS Account Has Been Created',
-            recipients=[user.email]
-        )
-        msg.body = f'''Hello {user.full_name},
+        import resend
+        import os
+        resend.api_key = os.environ.get('RESEND_API_KEY')
 
-Your account has been created on the School Asset Management System.
+        params = {
+            "from": "School AMS <onboarding@resend.dev>",
+            "to": [user.email],
+            "subject": "Your School AMS Account Has Been Created",
+            "html": f"""
+                <h2>Hello {user.full_name},</h2>
+                <p>Your account has been created on the
+                <strong>School Asset Management System</strong>.</p>
+                <p><strong>Your account details:</strong></p>
+                <ul>
+                    <li>Name: {user.full_name}</li>
+                    <li>Email: {user.email}</li>
+                    <li>Role: {user.role.replace('_', ' ').title()}</li>
+                </ul>
+                <p>To activate your account please click the link below
+                and set your password:</p>
+                <p>
+                    <a href="https://school-asset-management.vercel.app/signup"
+                       style="background:#0d6efd;color:white;padding:10px 20px;
+                       text-decoration:none;border-radius:5px;">
+                        Activate My Account
+                    </a>
+                </p>
+                <p>Use the email address above when setting up your password.</p>
+                <p>You will not be able to log in until you have set your password.</p>
+                <br>
+                <p>Regards,<br>School Asset Management System</p>
+            """
+        }
 
-Your account details are as follows:
-Name: {user.full_name}
-Email: {user.email}
-Role: {user.role.replace('_', ' ').title()}
-
-To activate your account please visit the link below and set your password:
-http://127.0.0.1:5000/signup
-
-Use the email address above when setting up your password.
-You will not be able to log in until you have set your password.
-
-If you did not expect this email please ignore it.
-
-Regards,
-School Asset Management System'''
-        mail.send(msg)
+        resend.Emails.send(params)
         return True
     except Exception as e:
-        print('Email error:', e)
+        print('Resend email error:', e)
         return False
 
 @admin.route('/admin/users')
